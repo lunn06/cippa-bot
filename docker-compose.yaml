@@ -3,10 +3,14 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    restart: always
+    restart: on-failure
+    logging:
+      driver: local
     depends_on:
-      - postgres
-      - nats
+      nats:
+        condition: service_started
+      postgres:
+        condition: service_healthy
 
   nats-nui:
     image: ghcr.io/nats-nui/nui:latest
@@ -19,7 +23,7 @@ services:
 
   nats:
     image: nats:2.10-alpine3.20
-    command: "-c /config/server.conf"
+    command: "-c /config/server.conf --user cippa-bot --pass 8b75d32619ed6c8174d4"
     ports:
       - "4222:4222"
       - "8222:8222"

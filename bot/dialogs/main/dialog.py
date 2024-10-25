@@ -24,9 +24,11 @@ from bot.dialogs.main.handlers import (
     city_on_success,
     city_on_error,
     clear_city_button_on_click,
-    position_on_input,
-    preschool_on_input,
+    position_on_success,
+    preschool_on_success,
     final_on_input,
+    accepted_factory,
+    accepted_on_error,
 )
 from bot.states import MainSG
 
@@ -109,7 +111,9 @@ def get_dialog() -> Dialog:
         Format("{text}"),
         TextInput(
             id="preschool_text_input",
-            on_success=preschool_on_input,
+            type_factory=accepted_factory,
+            on_success=preschool_on_success,
+            on_error=accepted_on_error,
         ),
         getter=preschool_getter,
         state=MainSG.preschool,
@@ -119,7 +123,9 @@ def get_dialog() -> Dialog:
         Format("{text}"),
         TextInput(
             id="position_text_input",
-            on_success=position_on_input,
+            type_factory=accepted_factory,
+            on_success=position_on_success,
+            on_error=accepted_on_error,
         ),
         getter=position_getter,
         state=MainSG.position,

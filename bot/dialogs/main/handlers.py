@@ -10,10 +10,14 @@ from bot.database.requests import ensure_user_fullname, ensure_user_city, ensure
 from bot.states import MainSG
 
 NAME_RE = re.compile(r"^\w{1,32} \w{1,32} ?\w{1,32}?$")
+ACCEPTED_LETTER_LOWER = "абвгдеёжзийклмнопрстуфхцчшщъыьэюя "
+ACCEPTED_ERROR_STR = "ascii"
 
 
 def name_factory(text: str) -> str:
     text = text.strip()
+    if any(c.lower() not in ACCEPTED_LETTER_LOWER for c in text):
+        raise ValueError(ACCEPTED_ERROR_STR)
     if NAME_RE.fullmatch(text):
         return text
     raise ValueError(text)
@@ -33,13 +37,18 @@ async def name_on_success(
 
 
 async def name_on_error(
-        _message: Message,
+        message: Message,
         _widget: ManagedTextInput,
         dialog_manager: DialogManager,
         error: ValueError,
         **_kwargs,
 ) -> None:
-    dialog_manager.dialog_data["invalid_name"] = error.args[0]
+    error_arg = error.args[0]
+    if error_arg == ACCEPTED_ERROR_STR:
+        await message.answer("Допустимы только буквы кириллицы")
+        return
+
+    dialog_manager.dialog_data["invalid_name"] = error_arg
     await dialog_manager.switch_to(MainSG.clear_name)
 
 
@@ -58,6 +67,8 @@ async def clear_name_button_on_click(
 
 def city_factory(text: str) -> str:
     text = text.strip()
+    if any(c.lower() not in ACCEPTED_LETTER_LOWER for c in text):
+        raise ValueError(ACCEPTED_ERROR_STR)
     if text[0].isupper():
         return text
     raise ValueError(text)
@@ -77,13 +88,18 @@ async def city_on_success(
 
 
 async def city_on_error(
-        _message: Message,
+        message: Message,
         _widget: ManagedTextInput,
         dialog_manager: DialogManager,
         error: ValueError,
         **_kwargs,
 ) -> None:
-    dialog_manager.dialog_data["invalid_city"] = error.args[0]
+    error_arg = error.args[0]
+    if error_arg == ACCEPTED_ERROR_STR:
+        await message.answer("Допустимы только буквы кириллицы")
+        return
+
+    dialog_manager.dialog_data["invalid_city"] = error_arg
     await dialog_manager.switch_to(MainSG.clear_city)
 
 
@@ -100,7 +116,27 @@ async def clear_city_button_on_click(
     await dialog_manager.switch_to(MainSG.preschool)
 
 
-async def preschool_on_input(
+def accepted_factory(text: str) -> str:
+    text = text.strip()
+    if any(c.lower() not in ACCEPTED_LETTER_LOWER for c in text):
+        raise ValueError(ACCEPTED_ERROR_STR)
+    return text
+
+
+async def accepted_on_error(
+        message: Message,
+        _widget: ManagedTextInput,
+        _dialog_manager: DialogManager,
+        error: ValueError,
+        **_kwargs,
+) -> None:
+    error_arg = error.args[0]
+    if error_arg == ACCEPTED_ERROR_STR:
+        await message.answer("Допустимы только буквы кириллицы")
+        return
+
+
+async def preschool_on_success(
         message: Message,
         _widget: ManagedTextInput,
         dialog_manager: DialogManager,
@@ -108,13 +144,12 @@ async def preschool_on_input(
         **_kwargs,
 ) -> None:
     session: AsyncSession = dialog_manager.middleware_data["session"]
-    # await update_user(session, message.from_user.id, preschool=preschool)
     await ensure_user_preschool(session, message.from_user.id, preschool)
 
     await dialog_manager.switch_to(MainSG.position)
 
 
-async def position_on_input(
+async def position_on_success(
         message: Message,
         _widget: ManagedTextInput,
         dialog_manager: DialogManager,

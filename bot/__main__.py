@@ -1,6 +1,6 @@
-import asyncio
 import logging
 
+import uvloop
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
@@ -41,7 +41,12 @@ async def main():
     session_maker = async_sessionmaker(engine, expire_on_commit=config.debug)
 
     nats_str_servers = list(map(str, config.nats_servers))
-    nc, js = await connect_to_nats(nats_str_servers)
+    nc, js = await connect_to_nats(
+        nats_str_servers,
+        config.nats_user,
+        config.nats_password.get_secret_value(),
+        config.nats_token.get_secret_value(),
+    )
     storage = await NatsStorage.init(nc, js, key_builder=DefaultKeyBuilder(with_destiny=True))
 
     dp = Dispatcher(storage=storage)
@@ -64,5 +69,5 @@ async def main():
 
 
 if __name__ == '__main__':
-    # uvloop.run(main(), debug=config.debug)
-    asyncio.run(main(), debug=config.debug)
+    uvloop.run(main(), debug=config.debug)
+    # asyncio.run(main(), debug=config.debug)

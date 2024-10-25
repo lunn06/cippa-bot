@@ -12,7 +12,11 @@ class Config(BaseSettings):
     bot_token: SecretStr
 
     db_url: SecretStr
+
     nats_servers: list[NatsDsn]
+    nats_user: str
+    nats_password: SecretStr
+    nats_token: SecretStr
 
     webhook: bool
     debug: bool
