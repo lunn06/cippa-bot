@@ -10,7 +10,7 @@ from bot.database.requests import ensure_user_fullname, ensure_user_city, ensure
 from bot.states import MainSG
 
 NAME_RE = re.compile(r"^\w{1,32} \w{1,32} ?\w{1,32}?$")
-ACCEPTED_LETTER_LOWER = "абвгдеёжзийклмнопрстуфхцчшщъыьэюя "
+ACCEPTED_LETTER_LOWER = "абвгдеёжзийклмнопрстуфхцчшщъыьэюя -"
 ACCEPTED_ERROR_STR = "ascii"
 
 
